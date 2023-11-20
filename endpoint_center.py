@@ -2,6 +2,7 @@ import argparse
 from typing import Dict, List
 from flask import Flask, request, jsonify
 import openai
+from openai import OpenAI
 import traceback
 import sys
 import time
@@ -49,20 +50,19 @@ def chat():
 
 
 def call_openai(messages, model_name="gpt-4-1106-preview", temperature=0.1, max_tokens=200, top_p=0.1):
-
     # Ensure default values are used if parameters are not explicitly provided
     model_name = model_name or args.model_name
     temperature = temperature or args.temperature
     max_tokens = max_tokens or args.max_tokens
     top_p = top_p or args.top_p
 
-    # Concatenate messages into a single prompt string
-    prompt = " ".join([msg["content"] for msg in messages])  # Adjust as needed
+    # Instantiate the OpenAI client
+    client = OpenAI(api_key=args.openai_api_key)
 
-    # Call the OpenAI API
-    response = openai.Completion.create(
+    # Create a chat completion
+    response = client.chat.completions.create(
         model=model_name,
-        prompt=prompt,
+        messages=messages,
         temperature=temperature,
         max_tokens=max_tokens,
         top_p=top_p,
@@ -70,11 +70,8 @@ def call_openai(messages, model_name="gpt-4-1106-preview", temperature=0.1, max_
         presence_penalty=1
     )
 
-    # Extract the response text
-    resp = response.choices[0].text.strip()
-    resp = resp.replace("\n\n", "\n")
-
-    return resp
+    # Extract and return the response text
+    return response.choices[0].message["content"]
 
 
 def get_highest_score_response(request_str):
