@@ -71,7 +71,8 @@ def call_openai(messages, model_name="gpt-4-1106-preview", temperature=0.1, max_
     )
 
     # Extract and return the response text
-    return response.choices[0].message["content"]
+    # Note: Adjusted to the new response object structure
+    return response.choices[0].message.content
 
 
 def get_highest_score_response(request_str):
